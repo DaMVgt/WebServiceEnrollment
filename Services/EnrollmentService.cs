@@ -1,9 +1,12 @@
 using WebServicesEnrollment.Models;
+using System.Data.SqlClient;
+using System.Data;
 
 namespace WebServicesEnrollment.Services
 {
     public class EnrollmentService : IEnrollmentService
     {
+        private SqlConnection connection = new SqlConnection("Server=localhost;Database=kalum_test;User Id=sa;Password=Inicio.2022;");
         private List<Aspirante> aspirantes = new List<Aspirante>();
         private List<CarreraTecnica> carreras = new List<CarreraTecnica>();
         private List<Cargo> cargos = new List<Cargo>();
@@ -37,13 +40,22 @@ namespace WebServicesEnrollment.Services
         public Aspirante buscarAspirante(string noExpediente)
         {
             Aspirante resultado = null;
-            for (int i = 0; i < aspirantes.Count; i++)
-            {
-                if (aspirantes[i].NoExpediente == noExpediente)
-                {
-                    resultado = aspirantes[i];
-                    break;
-                }
+
+            SqlDataAdapter daAspirante = new SqlDataAdapter($"SELECT * from Aspirante WHERE NoExpediente = '{noExpediente}';", connection);
+            DataSet dsAspirante = new DataSet();
+            daAspirante.Fill(dsAspirante, "Aspirante");
+            if(dsAspirante.Tables["Aspirante"].Rows.Count > 0){
+                resultado = new Aspirante() {
+                    NoExpediente = dsAspirante.Tables["Aspirante"].Rows[0][0].ToString(),
+                    Apellidos = dsAspirante.Tables["Aspirante"].Rows[0][1].ToString(),
+                    Nombres = dsAspirante.Tables["Aspirante"].Rows[0][2].ToString(),
+                    Direccion = dsAspirante.Tables["Aspirante"].Rows[0][3].ToString(),
+                    Telefono = dsAspirante.Tables["Aspirante"].Rows[0][4].ToString(),
+                    Email = dsAspirante.Tables["Aspirante"].Rows[0][5].ToString(),
+                    Estatus = dsAspirante.Tables["Aspirante"].Rows[0][6].ToString(),
+                    CarreraId = dsAspirante.Tables["Aspirante"].Rows[0][7].ToString(),
+                    JornadaId = dsAspirante.Tables["Aspirante"].Rows[0][9].ToString()
+                };
             }
             return resultado;
         }
