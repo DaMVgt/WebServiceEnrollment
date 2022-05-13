@@ -30,15 +30,41 @@ namespace WebServicesEnrollment.Services
             Aspirante aspirante = buscarAspirante(request.NoExpediente);
             if (aspirante == null)
             {
-                respuesta = new EnrollmentResponse() { Codigo = 204, Respuesta = "No Existe registro" };
+                respuesta = new EnrollmentResponse() { Codigo = 204, Respuesta = $"No Existe el aspiratne con el Expediente {request.NoExpediente}" };
             }
             else
             {
-                respuesta = new EnrollmentResponse() { Codigo = 201, Respuesta = "Enrollment success!!!" };
+                respuesta = EjecutarProcedimiento(request);
             }
             return respuesta;
         }
-        public Aspirante buscarAspirante(string noExpediente)
+        private EnrollmentResponse EjecutarProcedimiento(EnrollmentRequest request)
+        {
+            EnrollmentResponse respuesta = null;
+            SqlCommand cmd = new SqlCommand("sp_EnrollmentProcess", connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.Add(new SqlParameter("@NoExpediente", request.NoExpediente));
+            cmd.Parameters.Add(new SqlParameter("@Ciclo", request.Ciclo));
+            cmd.Parameters.Add(new SqlParameter("@MesInicioPago", request.MesInicioPago));
+            cmd.Parameters.Add(new SqlParameter("@CarreraId", request.CarreraId));
+            try
+            {
+                connection.Open();
+                cmd.ExecuteNonQuery();
+                connection.Close();
+                respuesta = new EnrollmentResponse() { Codigo = 201, Respuesta = "Enrollment success!!!" };
+            }
+            catch
+            {
+                respuesta = new EnrollmentResponse() { Codigo = 503, Respuesta = "Error al momento de llamar al procedimiento almacenado" };
+            }
+            finally
+            {
+                connection.Close();
+            }
+            return respuesta;
+        }
+        private Aspirante buscarAspirante(string noExpediente)
         {
             Aspirante resultado = null;
 
