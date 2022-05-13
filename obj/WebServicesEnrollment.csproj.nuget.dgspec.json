@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\antmo\\Documents\\CsharpEjercicios\\WebServicesEnrollment\\WebServicesEnrollment.csproj": {}
+    "D:\\2022\\Dev\\CsharpEjercicios\\WebServicesEnrollment\\WebServicesEnrollment.csproj": {}
   },
   "projects": {
-    "E:\\antmo\\Documents\\CsharpEjercicios\\WebServicesEnrollment\\WebServicesEnrollment.csproj": {
+    "D:\\2022\\Dev\\CsharpEjercicios\\WebServicesEnrollment\\WebServicesEnrollment.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\antmo\\Documents\\CsharpEjercicios\\WebServicesEnrollment\\WebServicesEnrollment.csproj",
+        "projectUniqueName": "D:\\2022\\Dev\\CsharpEjercicios\\WebServicesEnrollment\\WebServicesEnrollment.csproj",
         "projectName": "WebServicesEnrollment",
-        "projectPath": "E:\\antmo\\Documents\\CsharpEjercicios\\WebServicesEnrollment\\WebServicesEnrollment.csproj",
+        "projectPath": "D:\\2022\\Dev\\CsharpEjercicios\\WebServicesEnrollment\\WebServicesEnrollment.csproj",
         "packagesPath": "C:\\Users\\antmo\\.nuget\\packages\\",
-        "outputPath": "E:\\antmo\\Documents\\CsharpEjercicios\\WebServicesEnrollment\\obj\\",
+        "outputPath": "D:\\2022\\Dev\\CsharpEjercicios\\WebServicesEnrollment\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\antmo\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -43,6 +43,10 @@
             "SoapCore": {
               "target": "Package",
               "version": "[1.1.0.28, )"
+            },
+            "System.Data.SqlClient": {
+              "target": "Package",
+              "version": "[4.8.3, )"
             }
           },
           "imports": [
@@ -63,7 +67,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.202\\RuntimeIdentifierGraph.json"
         }
       }
     }
