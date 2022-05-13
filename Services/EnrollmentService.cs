@@ -27,7 +27,8 @@ namespace WebServicesEnrollment.Services
         public EnrollmentResponse EnrollmentProcess(EnrollmentRequest request)
         {
             EnrollmentResponse respuesta = null;
-            if (buscarAspirante(request.NoExpediente) == null)
+            Aspirante aspirante = buscarAspirante(request.NoExpediente);
+            if (aspirante == null)
             {
                 respuesta = new EnrollmentResponse() { Codigo = 204, Respuesta = "No Existe registro" };
             }
@@ -44,8 +45,10 @@ namespace WebServicesEnrollment.Services
             SqlDataAdapter daAspirante = new SqlDataAdapter($"SELECT * from Aspirante WHERE NoExpediente = '{noExpediente}';", connection);
             DataSet dsAspirante = new DataSet();
             daAspirante.Fill(dsAspirante, "Aspirante");
-            if(dsAspirante.Tables["Aspirante"].Rows.Count > 0){
-                resultado = new Aspirante() {
+            if (dsAspirante.Tables["Aspirante"].Rows.Count > 0)
+            {
+                resultado = new Aspirante()
+                {
                     NoExpediente = dsAspirante.Tables["Aspirante"].Rows[0][0].ToString(),
                     Apellidos = dsAspirante.Tables["Aspirante"].Rows[0][1].ToString(),
                     Nombres = dsAspirante.Tables["Aspirante"].Rows[0][2].ToString(),
