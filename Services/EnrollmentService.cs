@@ -1,31 +1,28 @@
 using WebServicesEnrollment.Models;
 using System.Data.SqlClient;
 using System.Data;
+using System.Text.Json;
+using Serilog;
 
 namespace WebServicesEnrollment.Services
 {
     public class EnrollmentService : IEnrollmentService
     {
-        private SqlConnection connection = new SqlConnection("Server=localhost;Database=kalum_test;User Id=sa;Password=Inicio.2022;");
-        private List<CarreraTecnica> carreras = new List<CarreraTecnica>();
-        private List<Cargo> cargos = new List<Cargo>();
+        private SqlConnection connection = new SqlConnection("Server=localhost;Database=kalum_test1;User Id=sa;Password=Inicio.2022;");
+        private AppLog AppLog = new AppLog();
         public EnrollmentService()
         {
-            carreras.Add(new CarreraTecnica() { CarreraId = "1", Carrera = "FullStack DOTNET Core" });
-            carreras.Add(new CarreraTecnica() { CarreraId = "2", Carrera = "FullStack Java EE" });
-            carreras.Add(new CarreraTecnica() { CarreraId = "3", Carrera = "Desarrollo Movil Android" });
-
-            cargos.Add(new Cargo() { CargoId = "1", Descripcion = "Pago por inscripcion", Prefijo = "INSC", Monto = 1200.00, IsGeneraMora = false, PorcentajeMora = 0 });
-            cargos.Add(new Cargo() { CargoId = "2", Descripcion = "Pago Carnet", Prefijo = "CARNE", Monto = 30.00, IsGeneraMora = false, PorcentajeMora = 0 });
-            cargos.Add(new Cargo() { CargoId = "3", Descripcion = "Pago academico mensual", Prefijo = "PAGM", Monto = 800.00, IsGeneraMora = false, PorcentajeMora = 0 });
         }
         public EnrollmentResponse EnrollmentProcess(EnrollmentRequest request)
         {
+            AppLog.ResponseTime = Convert.ToInt16(DateTime.Now.ToString("fff"));
+            AppLog.DateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             EnrollmentResponse respuesta = null;
             Aspirante aspirante = buscarAspirante(request.NoExpediente);
             if (aspirante == null)
             {
                 respuesta = new EnrollmentResponse() { Codigo = 204, Respuesta = $"No Existe el aspiratne con el Expediente {request.NoExpediente}" };
+                ImprimirLog(204, $"No Existe el aspirante con el Expediente {request.NoExpediente}", "Information");
             }
             else
             {
@@ -42,22 +39,69 @@ namespace WebServicesEnrollment.Services
             cmd.Parameters.Add(new SqlParameter("@Ciclo", request.Ciclo));
             cmd.Parameters.Add(new SqlParameter("@MesInicioPago", request.MesInicioPago));
             cmd.Parameters.Add(new SqlParameter("@CarreraId", request.CarreraId));
+            SqlDataReader reader = null;
             try
             {
                 connection.Open();
-                cmd.ExecuteNonQuery();
+                reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    respuesta = new EnrollmentResponse()
+                    {
+                        Respuesta = reader.GetValue(0).ToString(),
+                        Carne = reader.GetValue(1).ToString()
+                    };
+                    AppLog.DateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                    if (reader.GetValue(0).ToString().Equals("TRANSACTION SUCCESS"))
+                    {
+                        respuesta.Codigo = 201;
+                        ImprimirLog(201, reader.GetValue(0).ToString(), "Information");
+                    }
+                    else if (reader.GetValue(0).ToString().Equals("TRANSACTION ERROR"))
+                    {
+                        respuesta.Codigo = 503;
+                        ImprimirLog(503, reader.GetValue(0).ToString(), "Error");
+                    }
+                    else
+                    {
+                        respuesta.Codigo = 503;
+                        ImprimirLog(503, "Error al ejecutar el procedimiento almacenado", "Error");
+                    }
+                }
+                reader.Close();
                 connection.Close();
-                respuesta = new EnrollmentResponse() { Codigo = 201, Respuesta = "Enrollment success!!!" };
             }
             catch
             {
-                respuesta = new EnrollmentResponse() { Codigo = 503, Respuesta = "Error al momento de llamar al procedimiento almacenado" };
+                respuesta = new EnrollmentResponse() { Codigo = 503, Respuesta = "Error al momento de ejecutar proceso de inscripcion", Carne = "0" };
+                ImprimirLog(503, "Error al ejecutar el proceso de inscripcion", "Error");
             }
             finally
             {
                 connection.Close();
             }
             return respuesta;
+        }
+        private void ImprimirLog(int responseCode, string message, string typeLog)
+        {
+            AppLog.ResponseCode = responseCode;
+            AppLog.Message = message;
+            AppLog.ResponseTime = Convert.ToInt16(DateTime.Now.ToString("fff")) - AppLog.ResponseTime;
+            if (typeLog.Equals("Information"))
+            {
+                AppLog.Level = 20;
+                Log.Information(JsonSerializer.Serialize(AppLog));
+            }
+            else if (typeLog.Equals("Error"))
+            {
+                AppLog.Level = 40;
+                Log.Error(JsonSerializer.Serialize(AppLog));
+            }
+            else if (typeLog.Equals("Debug"))
+            {
+                AppLog.Level = 10;
+                Log.Debug(JsonSerializer.Serialize(AppLog));
+            }
         }
         private Aspirante buscarAspirante(string noExpediente)
         {
